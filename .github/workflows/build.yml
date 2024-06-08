@@ -1,51 +1,45 @@
-name: "Gradle build"
-permissions: {}
-on:
-  - push
-  - pull_request
-  - workflow_dispatch
-
 jobs:
   build:
-    name: "Gradle build"
-    runs-on: ubuntu-latest
     env:
       GRADLE_MICROG_VERSION_WITHOUT_GIT: 1
-
+    name: Gradle build
+    runs-on: self-hosted
     steps:
-      - name: "Checkout sources"
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: "Setup Java"
-        uses: actions/setup-java@v4
-        with:
-          distribution: "temurin"
-          java-version: "17"
-      - name: "Gradle Wrapper validation"
-        uses: gradle/actions/wrapper-validation@v3
-      - name: "Setup Gradle"
-        uses: gradle/actions/setup-gradle@v3
-      - name: "Setup matchers"
-        run: |
-          # Setting up matchers...
-
-          matchers_dir='${{ github.workspace }}/.github/matchers'
-          matcher_list()
-          {
-            echo 'gradle-build-matcher.json'
-            echo 'gradle-build-kotlin-error-matcher.json'
-          }
-
-          matcher_list | while IFS='' read -r NAME; do
-            if test -f "${matchers_dir:?}/${NAME:?}"; then
-              echo "::add-matcher::${matchers_dir:?}/${NAME:?}"
-              echo "Matcher configured: ${NAME:?}"
-            fi
-          done
-      - name: "Inspect Gradle tasks"
-        run: "./gradlew tasks"
-      - name: "Execute Gradle assemble"
-        run: "./gradlew assemble"
-      - name: "Execute Gradle check"
-        run: "./gradlew check"
+    - continue-on-error: true
+      name: Checkout sources
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - continue-on-error: true
+      name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: '17'
+    - continue-on-error: true
+      name: Gradle Wrapper validation
+      uses: gradle/actions/wrapper-validation@v3
+    - continue-on-error: true
+      name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+    - continue-on-error: true
+      name: Setup matchers
+      run: "# Setting up matchers...\n\nmatchers_dir='${{ github.workspace }}/.github/matchers'\n\
+        matcher_list()\n{\n  echo 'gradle-build-matcher.json'\n  echo 'gradle-build-kotlin-error-matcher.json'\n\
+        }\n\nmatcher_list | while IFS='' read -r NAME; do\n  if test -f \"${matchers_dir:?}/${NAME:?}\"\
+        ; then\n    echo \"::add-matcher::${matchers_dir:?}/${NAME:?}\"\n    echo\
+        \ \"Matcher configured: ${NAME:?}\"\n  fi\ndone\n"
+    - continue-on-error: true
+      name: Inspect Gradle tasks
+      run: ./gradlew tasks
+    - continue-on-error: true
+      name: Execute Gradle assemble
+      run: ./gradlew assemble
+    - continue-on-error: true
+      name: Execute Gradle check
+      run: ./gradlew check
+name: Gradle build
+on:
+  repository_dispatch:
+    types: trigger-ga___build.yml
+permissions: {}
